@@ -218,4 +218,4 @@ if uploaded_file is not None:
             ]
         else:
             filtered_df = st.session_state.processed_df
-        st.dataframe(filtered_df["meaningful_topic"], use_container_width=True, height=250)
+        st.dataframe(filtered_df.rename(columns={"meaningful_topic": "Processed Topics"})["Processed Topics"], use_container_width=True, height=250)
