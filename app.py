@@ -20,13 +20,6 @@ from sklearn.feature_extraction.text import CountVectorizer
 from helpers.helpers import *
 
 
-# Function to clean text (each row of data from dataframe.)
-# def clean_text(text):
-    
-
-
-# Function caching
-@st.cache_data(show_spinner=False)
 def clean_text(text):
     """Function to clean text (modify as needed)."""
     # Convert to lowercase
@@ -40,20 +33,20 @@ def clean_text(text):
     
     return text
 
-@st.cache_resource(show_spinner=False)
+
 def create_vectorizer(n_grams, max_df_threshold):
-    """Creates and caches the CountVectorizer."""
+    """Creates the CountVectorizer."""
     return CountVectorizer(ngram_range=n_grams, stop_words="english", max_df=max_df_threshold)
 
-@st.cache_data(show_spinner=False)
+
 def extract_topics(df, _vectorizer, top_n=5, batch_size=300):
-    """Performs parallel topic extraction and caches results."""
+    """Performs parallel topic extraction."""
     return parallel_extract_topics(df, _vectorizer, top_n, batch_size)
 
-@st.cache_data(show_spinner=False)
+
 def refine_topics(df, batch_size=300):
     """
-    Refines topics using OpenAI and caches results.
+    Refines topics using OpenAI.
     
     Args:
         df: DataFrame containing 'Topic' and 'Frequency' columns
@@ -63,6 +56,7 @@ def refine_topics(df, batch_size=300):
         DataFrame with refined topics added as 'meaningful_topic' column
     """
     return process_in_batches(df, batch_size)
+
 
 def process_topic_frequencies(transformed_data, vectorizer):
     """
@@ -90,23 +84,14 @@ def process_topic_frequencies(transformed_data, vectorizer):
     
     return processed_df
 
+
 # Initialize session state variables
 if 'uploaded_df' not in st.session_state:
     st.session_state.uploaded_df = None
 if 'processed_df' not in st.session_state:
     st.session_state.processed_df = None
-if 'current_column' not in st.session_state:
-    st.session_state.current_column = None
-if 'current_ngram' not in st.session_state:
-    st.session_state.current_ngram = None
-if 'current_threshold' not in st.session_state:
-    st.session_state.current_threshold = None
-if 'vectorizer' not in st.session_state:
-    st.session_state.vectorizer = None
 if 'current_file_name' not in st.session_state:
     st.session_state.current_file_name = None
-if 'topic_frequencies' not in st.session_state:
-    st.session_state.topic_frequencies = None
 
 
 # Set page title
@@ -202,9 +187,7 @@ if uploaded_file is not None:
     # Check if analysis needs to be rerun
     needs_rerun = (
         st.session_state.processed_df is None or
-        st.session_state.current_column != column_name or
-        st.session_state.current_ngram != n_grams or
-        st.session_state.current_threshold != max_df_threshold
+        st.session_state.current_file_name != current_file
     )
 
     # Trigger analysis
@@ -219,32 +202,26 @@ if uploaded_file is not None:
 
                 # Step 2: Creating and caching vectorizer
                 status_placeholder.text("Step 2: Extracting Topics...")
-                st.session_state.vectorizer = create_vectorizer(n_grams, max_df_threshold)
+                vectorizer = create_vectorizer(n_grams, max_df_threshold)
                 
                 # Fit the vectorizer on the entire dataset first
-                st.session_state.vectorizer.fit(st.session_state.uploaded_df["clean_text"])
+                vectorizer.fit(st.session_state.uploaded_df["clean_text"])
                 
                 # Transform each chunk in parallel
                 with Pool() as pool:
                     chunks = np.array_split(st.session_state.uploaded_df["clean_text"], pool._processes)
-                    transformed_chunks = pool.map(st.session_state.vectorizer.transform, chunks)
+                    transformed_chunks = pool.map(vectorizer.transform, chunks)
                 
                 # Convert each chunk to a dense array and combine them
                 transformed_data = np.vstack([chunk.toarray() for chunk in transformed_chunks])
                 
                 # Process topics and store results
-                status_placeholder.text("Step 4: Processing and Refining Topics...")
+                status_placeholder.text("Step 3: Processing and Refining Topics...")
                 st.session_state.processed_df = process_topic_frequencies(
                     transformed_data,
-                    st.session_state.vectorizer
+                    vectorizer
                 )
-                # st.session_state.processed_df.rename(columns={"rough_topics":"Base Topics"}, inplace=True)
                 st.session_state.topic_frequencies = st.session_state.processed_df[["Base Topics", "Frequency", "AI Refined Topic"]]
-
-                # Update current parameters
-                st.session_state.current_column = column_name
-                st.session_state.current_ngram = n_grams
-                st.session_state.current_threshold = max_df_threshold
 
             except ValueError:
                 st.error("Please select column containing document abstract/content.")
