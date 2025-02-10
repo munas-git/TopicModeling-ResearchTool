@@ -42,7 +42,7 @@ def parallel_extract_topics(df, vectorizer, top_n=5, batch_size=300):
     with Pool(n_cores) as pool:
         results = pool.starmap(extract_top_n_keywords, [(batch.tolist(), vectorizer, top_n) for batch in text_batches])
 
-    df["rough_topics"] = [item for sublist in results for item in sublist]
+    df["Base Topics"] = [item for sublist in results for item in sublist]
     return df
 
 
@@ -54,7 +54,7 @@ def parallel_extract_topics(df, vectorizer, top_n=5, batch_size=300):
     with Pool(n_cores) as pool:
         results = pool.starmap(extract_top_n_keywords, [(batch.tolist(), vectorizer, top_n) for batch in text_batches])
 
-    df["rough_topics"] = [item for sublist in results for item in sublist]
+    df["Base Topics"] = [item for sublist in results for item in sublist]
     return df
 
 
@@ -132,11 +132,11 @@ def process_in_batches(df, batch_size=300):
     for start in stqdm(range(0, n_rows, batch_size), desc="Processing batches"):
         end = min(start + batch_size, n_rows)
         # Convert topics to string format suitable for prompt
-        topics_batch = df["Topic"].iloc[start:end].tolist()
+        topics_batch = df["Base Topics"].iloc[start:end].tolist()
         meaningful_topics_batch = process_rough_topics_to_meaningful_topic_batch(topics_batch)
         all_meaningful_topics.extend(meaningful_topics_batch)
     
     # Add meaningful topics as a new column
     df_result = df.copy()
-    df_result["meaningful_topic"] = all_meaningful_topics
+    df_result["AI Refined Topic"] = all_meaningful_topics
     return df_result

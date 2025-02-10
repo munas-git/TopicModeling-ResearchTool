@@ -78,7 +78,7 @@ def process_topic_frequencies(transformed_data, vectorizer):
     # Calculate topic frequencies
     topic_counts = np.asarray(transformed_data.sum(axis=0)).flatten()
     topics = vectorizer.get_feature_names_out()
-    topic_df = pd.DataFrame({'Topic': topics, 'Frequency': topic_counts})
+    topic_df = pd.DataFrame({'Base Topics': topics, 'Frequency': topic_counts})
 
     # Filter topics above mean frequency
     mean_frequency = topic_df['Frequency'].mean()
@@ -221,7 +221,6 @@ if uploaded_file is not None:
                 status_placeholder.text("Step 2: Extracting Topics...")
                 st.session_state.vectorizer = create_vectorizer(n_grams, max_df_threshold)
                 
-                # Fit and transform in parallel
                 # Fit the vectorizer on the entire dataset first
                 st.session_state.vectorizer.fit(st.session_state.uploaded_df["clean_text"])
                 
@@ -239,8 +238,8 @@ if uploaded_file is not None:
                     transformed_data,
                     st.session_state.vectorizer
                 )
-                st.session_state.processed_df.rename(columns={"meaningful_topic": "AI Refined Topic"}, inplace=True)
-                st.session_state.topic_frequencies = st.session_state.processed_df[["Topic", "Frequency", "AI Refined Topic"]]
+                # st.session_state.processed_df.rename(columns={"rough_topics":"Base Topics"}, inplace=True)
+                st.session_state.topic_frequencies = st.session_state.processed_df[["Base Topics", "Frequency", "AI Refined Topic"]]
 
                 # Update current parameters
                 st.session_state.current_column = column_name
@@ -275,7 +274,7 @@ if uploaded_file is not None:
 
         if topic_search_term:
             filtered_freq = st.session_state.topic_frequencies[
-                st.session_state.topic_frequencies["Topic"].apply(
+                st.session_state.topic_frequencies["Base Topics"].apply(
                     lambda x: all(term.lower() in str(x).lower() for term in topic_search_term)
                 )
             ]
