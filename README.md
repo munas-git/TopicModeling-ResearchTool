@@ -19,12 +19,12 @@ The **CABI Topic Modelling Tool** is a Streamlit-based application designed for 
 
 ## Installation
 ### **Prerequisites**
-Ensure you have Python installed (>=3.8).
+Ensure you have Python installed (>=3.10.3).
 
 ### **1. Clone the Repository**
 ```bash
   git clone https://github.com/your-repo/cabi-topic-modelling-tool.git
-  cd cabi-topic-modelling-tool
+  cd CABI-TopicModelling
 ```
 
 ### **2. Install Dependencies**
