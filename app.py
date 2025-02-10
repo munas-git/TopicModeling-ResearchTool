@@ -4,6 +4,7 @@ import time
 import streamlit as st
 
 # Data wrangling related.
+import re
 import pandas as pd
 
 # Data Visualisation related.
@@ -19,11 +20,25 @@ from sklearn.feature_extraction.text import CountVectorizer
 from helpers.helpers import *
 
 
+# Function to clean text (each row of data from dataframe.)
+# def clean_text(text):
+    
+
+
 # Function caching
 @st.cache_data(show_spinner=False)
 def clean_text(text):
     """Function to clean text (modify as needed)."""
-    return text.lower().strip()
+    # Convert to lowercase
+    text = str(text).lower()
+    
+    # Remove punctuation using string.punctuation
+    text = text.translate(str.maketrans('', '', string.punctuation))
+    
+    # Remove any non-alphanumeric characters (excluding spaces)
+    text = re.sub(r'[^a-zA-Z0-9\s]', '', text)
+    
+    return text
 
 @st.cache_resource(show_spinner=False)
 def create_vectorizer(n_grams, max_df_threshold):
@@ -31,14 +46,49 @@ def create_vectorizer(n_grams, max_df_threshold):
     return CountVectorizer(ngram_range=n_grams, stop_words="english", max_df=max_df_threshold)
 
 @st.cache_data(show_spinner=False)
-def extract_topics(df, _vectorizer, top_n=5, batch_size=300):  # Added underscore to vectorizer
+def extract_topics(df, _vectorizer, top_n=5, batch_size=300):
     """Performs parallel topic extraction and caches results."""
     return parallel_extract_topics(df, _vectorizer, top_n, batch_size)
 
 @st.cache_data(show_spinner=False)
 def refine_topics(df, batch_size=300):
-    """Refines topics using OpenAI and caches results."""
+    """
+    Refines topics using OpenAI and caches results.
+    
+    Args:
+        df: DataFrame containing 'Topic' and 'Frequency' columns
+        batch_size: Number of topics to process in each batch
+    
+    Returns:
+        DataFrame with refined topics added as 'meaningful_topic' column
+    """
     return process_in_batches(df, batch_size)
+
+def process_topic_frequencies(transformed_data, vectorizer):
+    """
+    Process topic frequencies and refine topics.
+    
+    Args:
+        transformed_data: Sparse matrix of TF-IDF scores
+        vectorizer: Fitted TF-IDF vectorizer
+    
+    Returns:
+        DataFrame with refined topics
+    """
+    # Calculate topic frequencies
+    topic_counts = np.asarray(transformed_data.sum(axis=0)).flatten()
+    topics = vectorizer.get_feature_names_out()
+    topic_df = pd.DataFrame({'Topic': topics, 'Frequency': topic_counts})
+
+    # Filter topics above mean frequency
+    mean_frequency = topic_df['Frequency'].mean()
+    above_mean_df = topic_df[topic_df['Frequency'] >= mean_frequency]
+    above_mean_df = above_mean_df.sort_values(by='Frequency', ascending=False).reset_index(drop=True)
+
+    # Refine topics
+    processed_df = refine_topics(above_mean_df, batch_size=300)
+    
+    return processed_df
 
 # Initialize session state variables
 if 'uploaded_df' not in st.session_state:
@@ -55,6 +105,8 @@ if 'vectorizer' not in st.session_state:
     st.session_state.vectorizer = None
 if 'current_file_name' not in st.session_state:
     st.session_state.current_file_name = None
+if 'topic_frequencies' not in st.session_state:
+    st.session_state.topic_frequencies = None
 
 
 # Set page title
@@ -159,34 +211,44 @@ if uploaded_file is not None:
     status_placeholder = st.empty()
     if st.button("Begin Analysis"):
         if needs_rerun:
-            # Step 1: Cleaning Data
-            status_placeholder.text("Step 1: Cleaning Data...")
-            time.sleep(1)
-            st.session_state.uploaded_df["clean_text"] = st.session_state.uploaded_df[column_name].apply(clean_text)
+            try:
+                # Step 1: Cleaning Data
+                status_placeholder.text("Step 1: Cleaning Data...")
+                time.sleep(1)
+                st.session_state.uploaded_df["clean_text"] = st.session_state.uploaded_df[column_name].apply(clean_text)
 
-            # Step 2: Creating and caching vectorizer
-            status_placeholder.text("Step 2: Extracting Topics...")
-            st.session_state.vectorizer = create_vectorizer(n_grams, max_df_threshold)
-            st.session_state.vectorizer.fit(st.session_state.uploaded_df["clean_text"])
+                # Step 2: Creating and caching vectorizer
+                status_placeholder.text("Step 2: Extracting Topics...")
+                st.session_state.vectorizer = create_vectorizer(n_grams, max_df_threshold)
+                
+                # Fit and transform in parallel
+                # Fit the vectorizer on the entire dataset first
+                st.session_state.vectorizer.fit(st.session_state.uploaded_df["clean_text"])
+                
+                # Transform each chunk in parallel
+                with Pool() as pool:
+                    chunks = np.array_split(st.session_state.uploaded_df["clean_text"], pool._processes)
+                    transformed_chunks = pool.map(st.session_state.vectorizer.transform, chunks)
+                
+                # Convert each chunk to a dense array and combine them
+                transformed_data = np.vstack([chunk.toarray() for chunk in transformed_chunks])
+                
+                # Process topics and store results
+                status_placeholder.text("Step 4: Processing and Refining Topics...")
+                st.session_state.processed_df = process_topic_frequencies(
+                    transformed_data,
+                    st.session_state.vectorizer
+                )
+                st.session_state.processed_df.rename(columns={"meaningful_topic": "AI Refined Topic"}, inplace=True)
+                st.session_state.topic_frequencies = st.session_state.processed_df[["Topic", "Frequency", "AI Refined Topic"]]
 
-            # Step 3: Parallelized Topic Extraction
-            status_placeholder.text("Step 3: Assigning Topics...")
-            st.session_state.processed_df = extract_topics(
-                st.session_state.uploaded_df,
-                st.session_state.vectorizer,
-                top_n=5,
-                batch_size=300
-            )
+                # Update current parameters
+                st.session_state.current_column = column_name
+                st.session_state.current_ngram = n_grams
+                st.session_state.current_threshold = max_df_threshold
 
-            # Step 4: Refining Topics
-            status_placeholder.text("Step 4: Refining Topics in Batch...")
-            st.session_state.processed_df = refine_topics(st.session_state.processed_df, batch_size=500)
-            # print("PROCESSED FILE",st.session_state.processed_df)
-
-            # Update current parameters
-            st.session_state.current_column = column_name
-            st.session_state.current_ngram = n_grams
-            st.session_state.current_threshold = max_df_threshold
+            except ValueError:
+                st.error("Please select column containing document abstract/content.")
 
         status_placeholder.empty()
 
@@ -208,15 +270,16 @@ if uploaded_file is not None:
             <br>
             """, unsafe_allow_html=True)
 
-        st.markdown(f"#### Topics Covered.")
+        st.markdown(f"#### Topics Covered & Their Frequencies.")
         topic_search_term = st.text_input("Search Topics:", "").split(" ")
 
         if topic_search_term:
-            filtered_df = st.session_state.processed_df[
-                st.session_state.processed_df["meaningful_topic"].apply(
+            filtered_freq = st.session_state.topic_frequencies[
+                st.session_state.topic_frequencies["Topic"].apply(
                     lambda x: all(term.lower() in str(x).lower() for term in topic_search_term)
                 )
             ]
         else:
-            filtered_df = st.session_state.processed_df
-        st.dataframe(filtered_df.rename(columns={"meaningful_topic": "Processed Topics"})["Processed Topics"], use_container_width=True, height=250)
+            filtered_freq = st.session_state.topic_frequencies
+
+        st.dataframe(filtered_freq, use_container_width=True, height=250)
