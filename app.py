@@ -124,11 +124,12 @@ if uploaded_file is not None:
     with col2_1:
         n_gram_choice = st.selectbox(
             "Select N-gram range:",
-            ("Tri-grams (3-grams)", "Four-grams (4-grams)", "Five-grams (5-grams)"),
-            help="Tri-grams (3-grams) capture sequences of 3 words. Four-grams (4-grams) capture sequences of 4 words. Five-grams (5-grams) capture sequences of 5 words. Choose based on how fine-grained you want the analysis to be"
+            ("Bi-grams (2-grams)", "Tri-grams (3-grams)", "Four-grams (4-grams)", "Five-grams (5-grams)"),
+            help="Bi-grams (2-grams) capture sequences of 2 words. Tri-grams (3-grams) capture sequences of 3 words. Four-grams (4-grams) capture sequences of 4 words. Five-grams (5-grams) capture sequences of 5 words. Choose based on how fine-grained you want the analysis to be"
         )
 
         n_grams = {
+            "Bi-grams (2-grams)": (2, 2),
             "Tri-grams (3-grams)": (3, 3),
             "Four-grams (4-grams)": (4, 4),
             "Five-grams (5-grams)": (5, 5)
