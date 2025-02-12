@@ -5,6 +5,11 @@ The **CABI Topic Modelling Tool** is a Streamlit-based application designed for 
 
 ---
 
+## 🎥 Demo Video  
+[![Watch the video](https://img.youtube.com/vi/za5Z0IyRAaU/maxresdefault.jpg)](https://youtu.be/za5Z0IyRAaU)  
+
+---
+
 ## Features
 - **Upload CSV Files**: Users can upload a CSV file containing textual data.
 - **Text Cleaning**: Removes punctuation, converts text to lowercase, and eliminates non-alphanumeric characters.
@@ -22,12 +27,14 @@ The **CABI Topic Modelling Tool** is a Streamlit-based application designed for 
 Ensure you have Python installed (>=3.10.3).
 
 ### **1. Clone the Repository**
+
 ```bash
-  git clone https://github.com/your-repo/cabi-topic-modelling-tool.git
-  cd CABI-TopicModelling
+git clone https://github.com/your-repo/cabi-topic-modelling-tool.git
+cd CABI-TopicModelling
 ```
 
 ### **2. Install Dependencies**
+
 ```bash
 pip install -r requirements.txt
 ```
@@ -118,3 +125,5 @@ After analysis, the tool generates:
 - **Interactive Visualizations**: Word clouds and bar charts for topic distribution.
 - **Model Customization**: Allow users to choose different NLP models.
 - **Cloud Storage Integration**: Store analysis results for later retrieval.
+
+[![Watch the video](https://img.youtube.com/vi/za5Z0IyRAaU/maxresdefault.jpg)](https://youtu.be/za5Z0IyRAaU)
