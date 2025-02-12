@@ -125,5 +125,3 @@ After analysis, the tool generates:
 - **Interactive Visualizations**: Word clouds and bar charts for topic distribution.
 - **Model Customization**: Allow users to choose different NLP models.
 - **Cloud Storage Integration**: Store analysis results for later retrieval.
-
-[![Watch the video](https://img.youtube.com/vi/za5Z0IyRAaU/maxresdefault.jpg)](https://youtu.be/za5Z0IyRAaU)
