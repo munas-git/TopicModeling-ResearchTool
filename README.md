@@ -5,7 +5,7 @@ The **CABI Topic Modelling Tool** is a Streamlit-based application designed for 
 
 ---
 
-## 🎥 Demo Video  
+## 🎥 Demo Video (Click to watch ⬇)  
 [![Watch the video](https://img.youtube.com/vi/za5Z0IyRAaU/maxresdefault.jpg)](https://youtu.be/za5Z0IyRAaU)  
 
 ---
