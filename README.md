@@ -30,7 +30,7 @@ Ensure you have Python installed (>=3.10.3).
 
 ```bash
 git clone https://github.com/munas-git/TopicModeling-ResearchTool.git
-cd TopicModelling
+cd TopicModeling-ResearchTool
 ```
 
 ### **2. Install Dependencies**
