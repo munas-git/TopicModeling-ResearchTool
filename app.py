@@ -95,25 +95,25 @@ if 'current_file_name' not in st.session_state:
 
 
 # Set page title
-st.set_page_config(page_title="CABI Topic Modelling Tool")
+st.set_page_config(page_title="TopicModeling-ResearchTool")
 
 # logo section
-logo_image_base64 = get_base64_image("./images/CabiKnowledgeLogo.png")
-col1, col2 = st.columns([1, 5])
-with col1:
-    st.markdown(
-        f"""
-        <style>
-        .top-left-logo {{
-            position: relative;
-            top: -50%;
-            left: -180%;
-        }}
-        </style>
-        <img class="top-left-logo" src="data:image/png;base64,{logo_image_base64}" width="130">
-        """,
-        unsafe_allow_html=True
-    )
+# logo_image_base64 = get_base64_image("./images/---.png")
+# col1, col2 = st.columns([1, 5])
+# with col1:
+#     st.markdown(
+#         f"""
+#         <style>
+#         .top-left-logo {{
+#             position: relative;
+#             top: -50%;
+#             left: -180%;
+#         }}
+#         </style>
+#         <img class="top-left-logo" src="data:image/png;base64,{logo_image_base64}" width="130">
+#         """,
+#         unsafe_allow_html=True
+#     )
 
 
 # Title section
@@ -137,7 +137,7 @@ st.markdown(
 
 
 # Upload cvs section
-uploaded_file = st.file_uploader("Upload CSV for analysis.", type=["csv"])
+uploaded_file = st.file_uploader("Upload CSV for analysis. (NOTE: each row representing a new document)", type=["csv"])
 
 if uploaded_file is not None:
     # Check if a new file has been uploaded by comparing filenames... couldnt compare uploaded file object directly
