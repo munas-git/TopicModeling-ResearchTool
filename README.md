@@ -5,8 +5,9 @@ The **Topic Modelling Tool** is a Streamlit-based application designed for extra
 
 ---
 
+
 ## 🎥 Demo Video (Click to watch ⬇)  
-[![Watch the video](https://img.youtube.com/vi/za5Z0IyRAaU/maxresdefault.jpg)](https://youtu.be/za5Z0IyRAaU)  
+[![Watch the video](https://github.com/user-attachments/assets/bf39b6fb-f3b8-44c5-b375-f3b78c387bc3)](https://youtu.be/za5Z0IyRAaU)  
 
 ---
 
