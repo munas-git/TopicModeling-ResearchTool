@@ -1,7 +1,7 @@
-# CABI Topic Modelling Tool
+# Topic Modeling-ResearchTool
 
 ## Overview
-The **CABI Topic Modelling Tool** is a Streamlit-based application designed for extracting and refining topics from textual data. The tool allows users to upload CSV files, select the desired text column for analysis, and extract meaningful topics using NLP techniques. It also integrates OpenAI's API to refine extracted topics into clearer, more interpretable themes.
+The **Topic Modelling Tool** is a Streamlit-based application designed for extracting and refining topics from textual data. The tool allows users to upload CSV files, select the desired text column for analysis, and extract meaningful topics using NLP techniques. It also integrates OpenAI's API to refine extracted topics into clearer, more interpretable themes.
 
 ---
 
@@ -29,8 +29,8 @@ Ensure you have Python installed (>=3.10.3).
 ### **1. Clone the Repository**
 
 ```bash
-git clone https://github.com/your-repo/cabi-topic-modelling-tool.git
-cd CABI-TopicModelling
+git clone https://github.com/munas-git/TopicModeling-ResearchTool.git
+cd TopicModelling
 ```
 
 ### **2. Install Dependencies**
